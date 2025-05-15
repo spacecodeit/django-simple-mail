@@ -198,7 +198,11 @@ class SimpleMailAdmin(modelAdminClass):
                 email = form.cleaned_data.get('email')
                 test_mail = simple_mailer._registry.get(mail.key)()
                 test_mail.set_test_context()
-                test_mail.send_test_mail([email])
+
+                if getattr(settings, 'EMAIL_FROM', False):
+                    test_mail.send_test_mail([email], settings.EMAIL_FROM)
+                else:
+                    test_mail.send_test_mail([email])
                 msg = gettext('Test mail successfully sent.')
                 messages.success(request, msg)
                 return HttpResponseRedirect(
