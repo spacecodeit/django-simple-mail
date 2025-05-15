@@ -34,9 +34,9 @@ class BaseSimpleMail(object):
         mail = self.get_mail()
         return mail.render(self.context, self.template)
 
-    def send_test_mail(self, to):
+    def send_test_mail(self, to, from_email=None):
         mail = self.get_mail()
-        return mail.send(to, self.context, self.template)
+        return mail.send(to, self.context, self.template, from_email)
 
     def send(self, to, from_email=None, bcc=[],
              connection=None, attachments=[], headers={}, cc=[], reply_to=[], fail_silently=False):
