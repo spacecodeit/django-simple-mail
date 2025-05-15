@@ -6,7 +6,6 @@ from django.db import models
 from django.conf import settings
 from django.template import (Context, Template, loader)
 from django.core.mail import EmailMultiAlternatives, get_connection
-from django.core.files.storage import get_storage_class
 
 try:
     from django.utils.translation import ugettext_lazy as _
@@ -19,7 +18,20 @@ from simple_mail.fields import SimpleMailRichTextField
 from premailer import transform
 
 
-simple_mail_file_storage = get_storage_class(getattr(settings, 'SIMPLE_MAIL_FILE_STORAGE', 'django.core.files.storage.FileSystemStorage'))()
+try:
+    # For Django 4.2 and above
+    from django.core.files.storage import storages
+    from django.core.files.storage.handler import InvalidStorageError
+
+    try:
+        simple_mail_file_storage = storages['SIMPLE_MAIL_FILE_STORAGE']
+    except InvalidStorageError:
+        from django.utils.module_loading import import_string
+        simple_mail_file_storage = import_string(getattr(settings, 'SIMPLE_MAIL_FILE_STORAGE', 'django.core.files.storage.FileSystemStorage'))()
+except ImportError:
+    # Deprecated since Django 4.2, Removed in Django 5.1
+    from django.core.files.storage import get_storage_class
+    simple_mail_file_storage = get_storage_class(getattr(settings, 'SIMPLE_MAIL_FILE_STORAGE', 'django.core.files.storage.FileSystemStorage'))()
 
 class SingletonModel(models.Model):
     singleton_instance_id = 1
